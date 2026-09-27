@@ -75,34 +75,37 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
         score = successorGameState.getScore()
 
-        # the closer the food is the better 
-        food_list = newFood.asList()
-        food_length = len(food_list)
+        food_list = newFood.asList() # converting the remaining food positions into a list
+        food_length = len(food_list) # finding how many food pellets are still left
 
+        # only calculating food distance if there is still food remaining
         if food_length > 0: 
-            food_distances = [util.manhattanDistance(newPos, food) for food in food_list]
-            closest_food = min(food_distances)
+            food_distances = [util.manhattanDistance(newPos, food) for food in food_list] # finding the Manhattan distance from PacMan to every food pellet
+            closest_food = min(food_distances) # getting the distance to the closest food pellet
 
-            food_score = 1.5 / (closest_food + 1)
-            score += food_score
+            food_score = 1.5 / (closest_food + 1) # giving a larger bonus when the closest food is nearby
+            score += food_score # adding the food bonus to the total score
         
-        # considering the ghost distance as well 
-        ghost_states_length = len(newGhostStates)
-        for i in range(ghost_states_length): 
-            current_ghost_position = newGhostStates[i].getPosition()
-            ghost_distance = util.manhattanDistance(newPos, current_ghost_position)
+        ghost_states_length = len(newGhostStates) # getting the number of ghosts that need to be considered
 
-            current_scared_ghost = newScaredTimes[i]
+        # checking PacMan's distance from each ghost
+        for i in range(ghost_states_length): 
+            current_ghost_position = newGhostStates[i].getPosition() # getting the current ghost's position
+            ghost_distance = util.manhattanDistance(newPos, current_ghost_position) # calculating the Manhattan distance between PacMan and the ghost
+
+            current_scared_ghost = newScaredTimes[i] # getting the amount of scared time remaining for this ghost
+            
+            # if the ghost is scared then it is safe for PacMan to approach it
             if current_scared_ghost > 0: 
-                scared_ghost_score = 2.5 / (ghost_distance + 1)
-                score += scared_ghost_score
+                scared_ghost_score = 2.5 / (ghost_distance + 1) # giving a larger reward when PacMan is closer to a scared ghost
+                score += scared_ghost_score # adding the scared ghost reward to the total score
             else: 
-                if ghost_distance <= 1: 
+                if ghost_distance <= 1: # giving a large penalty if PacMan gets directly next to a not scared ghost
                     score -= 10 
                 else: 
-                    score -= 1.0 / ghost_distance 
+                    score -= 1.0 / ghost_distance # giving a smaller penalty when the ghost is farther away (gets smaller as the distance from the ghost increases)
 
-        return score
+        return score # returning the final score for the action
 
 def scoreEvaluationFunction(currentGameState: GameState):
     """
@@ -162,15 +165,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
         gameState.isLose():
         Returns whether or not the game state is a losing state
         """
-        "*** YOUR CODE HERE ***"
-        num_Agents = gameState.getNumAgents()
+        
+        num_agents = gameState.getNumAgents()
 
         def minimax(state, agentIndex, depth):
             """Recursively compute the minimax value of 'state'"""
             if state.isWin() or state.isLose() or depth == self.depth:
                 return self.evaluationFunction(state)
             "if agentIndex == 0(back to PacMan) if > 0(ghost)"
-            next_agent = (agentIndex + 1) % num_Agents
+            next_agent = (agentIndex + 1) % num_agents
             next_depth = depth
 
             if next_agent == 0:
