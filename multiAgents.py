@@ -166,7 +166,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         Returns whether or not the game state is a losing state
         """
         
-        num_agents = gameState.getNumAgents()
+        num_agents = gameState.getNumAgents() # getting the total number of agents (PacMan and all ghosts) 
 
         # recursively finding the minimax value of a game state
         def minimax(state, agentIndex, depth):
@@ -198,7 +198,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         # trying each action PacMan can make from the starting state
         for action in gameState.getLegalActions(0):
             successor = gameState.generateSuccessor(0, action) # generating the state after PacMan takes the action
-            value = minimax(successor, 1, 0) # the ghost moves next while we are still at depth 0
+            value = minimax(successor, 1, 0) # the ghost moves next while still at depth 0
 
             # keeping action if it has the highest minimax value so far
             if value > chosen_value:
@@ -216,9 +216,10 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
         Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        num_agents = gameState.getNumAgents()
 
+        num_agents = gameState.getNumAgents() # getting the total number of agents (PacMan and all ghosts) 
+
+        # recursive function that performs minimax search with alpha-beta pruning
         def alpha_beta(state, agentIndex, depth, alpha, beta):
             if state.isWin() or state.isLose() or depth == self.depth: # stop searching if the game is over or the depth limit is reached
                 return self.evaluationFunction(state)
@@ -229,37 +230,45 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if next_agent == 0: # increasing the depth when all ghosts have moved and we return to PacMan
                 next_depth = next_depth + 1
 
-            if agentIndex == 0: # Best value this node has received from its children
-                best_value = -float('inf')
-            else:
-                best_value = float('inf')
+            # checking if the current agent is PacMan, then it is a maximizing node
+            if agentIndex == 0: 
+                best_value = -float('inf') # starting at negative infinity so any real value will be better
+            # else the current agent is one of the ghosts so this is a minimizing node
+            else: 
+                best_value = float('inf') # starting at positive infinity so any real value will be smaller
 
+            # going through each legal action in the original order from getLegalActions
             for action in state.getLegalActions(agentIndex):
-                successor = state.generateSuccessor(agentIndex, action)
-                child_value = alpha_beta(successor, next_agent, next_depth, alpha, beta)
+                successor = state.generateSuccessor(agentIndex, action)  # generating the state after PacMan takes the action
+                child_value = alpha_beta(successor, next_agent, next_depth, alpha, beta) # recursively evaluating the state using the next agent and updated depth
 
-                if agentIndex == 0:
-                    best_value = max(best_value, child_value)
-                    alpha = max(alpha, best_value)
-                else:
-                    best_value = min(best_value, child_value)
-                    beta = min(beta, best_value)
+                if agentIndex == 0: # if 0 then PacMan trying to max the score
+                    best_value = max(best_value, child_value) # keeping the largest value PacMan has seen 
+                    alpha = max(alpha, best_value) # updating alpha with the best value for max 
+                else: # else ghosts will try to minimize PacMan's score
+                    best_value = min(best_value, child_value) # keeping the smallest value the ghost has seen  
+                    beta = min(beta, best_value) # updating beta with the best value for min
 
-                if alpha > beta: # prune the remaining children
+                if alpha > beta: # prune the remaining children (if alpha > beta then remaining children cannot affect the final decision)
                     break
 
-            return best_value
-        alpha = -float('inf')
-        beta = float('inf')
-        chosen_action = None
-        chosen_value = -float('inf')
+            return best_value # returning the best minimax value found for current state 
+
+        alpha = -float('inf') # alpha starts at negative infinity
+        beta = float('inf') # beta starts at positive infinity
+        chosen_action = None # storing the action PacMan should return
+        chosen_value = -float('inf') # initializing PacMan's best value at negative infinity to be replaced with real action 
+
+        # trying each action PacMan can make from the starting state
         for action in gameState.getLegalActions(0):
-            # Pacman has moved, so ghost 1 is next
-            value = alpha_beta(gameState.generateSuccessor(0, action), 1, 0, alpha, beta)
-            if value > chosen_value:
-                chosen_value = value
-                chosen_action = action
+            successor = gameState.generateSuccessor(0, action) # generating the state after PacMan takes the action
+            value = alpha_beta(successor, 1, 0, alpha, beta) # the ghost moves next while still at depth 0
 
-            alpha = max(alpha, chosen_value)
-        return chosen_action
+            # if action has a better minimax value than the current then update 
+            if value > chosen_value: 
+                chosen_value = value # saving the new best value
+                chosen_action = action # saving the action that got the value
 
+            alpha = max(alpha, chosen_value) # updating the root alpha value so other branches can possibly be pruned 
+        print("chosen_value: ", chosen_value)
+        return chosen_action # returning the action with the highest minimax value for PacMan
