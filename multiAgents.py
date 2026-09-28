@@ -217,5 +217,49 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        num_agents = gameState.getNumAgents()
+
+        def alpha_beta(state, agentIndex, depth, alpha, beta):
+            if state.isWin() or state.isLose() or depth == self.depth: # stop searching if the game is over or the depth limit is reached
+                return self.evaluationFunction(state)
+            
+            next_agent = (agentIndex + 1) % num_agents # moving to the next agent after the current agent takes a turn
+            next_depth = depth # keeping the same depth while the ghosts are moving
+            
+            if next_agent == 0: # increasing the depth when all ghosts have moved and we return to PacMan
+                next_depth = next_depth + 1
+
+            if agentIndex == 0: # Best value this node has received from its children
+                best_value = -float('inf')
+            else:
+                best_value = float('inf')
+
+            for action in state.getLegalActions(agentIndex):
+                successor = state.generateSuccessor(agentIndex, action)
+                child_value = alpha_beta(successor, next_agent, next_depth, alpha, beta)
+
+                if agentIndex == 0:
+                    best_value = max(best_value, child_value)
+                    alpha = max(alpha, best_value)
+                else:
+                    best_value = min(best_value, child_value)
+                    beta = min(beta, best_value)
+
+                if alpha > beta: # prune the remaining children
+                    break
+
+            return best_value
+        alpha = -float('inf')
+        beta = float('inf')
+        chosen_action = None
+        chosen_value = -float('inf')
+        for action in gameState.getLegalActions(0):
+            # Pacman has moved, so ghost 1 is next
+            value = alpha_beta(gameState.generateSuccessor(0, action), 1, 0, alpha, beta)
+            if value > chosen_value:
+                chosen_value = value
+                chosen_action = action
+
+            alpha = max(alpha, chosen_value)
+        return chosen_action
 
