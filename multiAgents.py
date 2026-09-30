@@ -167,12 +167,12 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         
         num_agents = gameState.getNumAgents() # getting the total number of agents (PacMan and all ghosts) 
-
+        expanded = [1] # counting expanded nodes, starting with the root
         # recursively finding the minimax value of a game state
         def minimax(state, agentIndex, depth):
             if state.isWin() or state.isLose() or depth == self.depth: # stop searching if the game is over or the depth limit is reached
                 return self.evaluationFunction(state)
-
+            expanded[0] += 1
             next_agent = (agentIndex + 1) % num_agents # moving to the next agent after the current agent takes a turn
             next_depth = depth # keeping the same depth while the ghosts are moving
 
@@ -204,7 +204,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if value > chosen_value:
                 chosen_value = value
                 chosen_action = action
-        print("chosen_value: ", chosen_value) # printing the value to be checked against the expected values
+        #print("chosen_value: ", chosen_value) # printing the value to be checked against the expected values
+        print("nodes expanded:", expanded[0])
         return chosen_action # returning PacMan best action
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -218,12 +219,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
 
         num_agents = gameState.getNumAgents() # getting the total number of agents (PacMan and all ghosts) 
+        expanded = [1] # counting expanded nodes, starting with the root
 
         # recursive function that performs minimax search with alpha-beta pruning
         def alpha_beta(state, agentIndex, depth, alpha, beta):
             if state.isWin() or state.isLose() or depth == self.depth: # stop searching if the game is over or the depth limit is reached
                 return self.evaluationFunction(state)
-            
+            expanded[0] += 1
             next_agent = (agentIndex + 1) % num_agents # moving to the next agent after the current agent takes a turn
             next_depth = depth # keeping the same depth while the ghosts are moving
             
@@ -270,5 +272,6 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 chosen_action = action # saving the action that got the value
 
             alpha = max(alpha, chosen_value) # updating the root alpha value so other branches can possibly be pruned 
-        print("chosen_value: ", chosen_value)
+        #print("chosen_value: ", chosen_value)
+        print("nodes expanded:", expanded[0])
         return chosen_action # returning the action with the highest minimax value for PacMan
